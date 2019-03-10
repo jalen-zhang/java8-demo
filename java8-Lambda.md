@@ -1,7 +1,3 @@
-  **INDEX:**
-
-[TOC]
-
 ### Lambda
 
 ----
@@ -10,7 +6,8 @@
 >
 > 在java8中，Lambda表达式为java添加了缺失的函数式编程特性，使我们能将函数当做一等公民对待。
 >
-> 在将函数作为一等公民对待的语言中，Lambda表达式的类型是函数(如Python、js)，<font color=red>但在java中，Lambda表达式是对象</font>，它们必须依赖于一类特别的对象类型——函数式接口。如：`WorkerInterface i = () -> System.out.println("hello");`
+> 在将函数作为一等公民对待的语言中，Lambda表达式的类型是函数(如Python、js)，<font color=red>但在java中，Lambda表达式是对象</font>，它们必须依赖于一类特别的对象类型——函数式接口。如：
+> `WorkerInterface i = () -> System.out.println("hello");`
 
 <a name="fenced-code-block">**代码简洁**</a>：函数式编程写出的代码简洁且意图明确，使用stream接口让你从此告别for循环
 
@@ -21,7 +18,7 @@
 ````java
 new Thread(new Runnable(){	// 接口名
 	@Override
-	public void run(){		// 方法名
+	public void run(){	// 方法名
 		System.out.println("Thread run()");
 	}
 }).start();
@@ -64,6 +61,7 @@ List<Integer> list = Arrays.asList(1,2,3,4,5);
 for (Integer i : list) {
     System.out.println(i * 2);
 }
+
 // 内部迭代：没有外部迭代器，通过函数式接口实现
 list.forEach(new Consumer<Integer>() {
     @Override
@@ -71,10 +69,13 @@ list.forEach(new Consumer<Integer>() {
         System.out.println(integer * 2);
     }
 });
+
 // 进一步简化
 list.forEach((Integer i) -> System.out.println(i * 2));
+
 // 进一步简化：通过Lanbda表达式创建函数式接口的实例
 list.forEach(i -> System.out.println(i * 2));
+
 // 再进一步简化：通过方法引用创建函数式接口的一个实例
 list.forEach(System.out::println);
 ````
@@ -109,8 +110,10 @@ list.forEach(System.out::println);
   ````java
   // 通过Lanbda表达式创建函数式接口的实例
   list.forEach(i -> System.out.println(i * 2)); // i的类型 ==> 类型推断机制
+  
   // 通过方法引用创建函数式接口的实例
-  list.forEach(System.out::println);	// 按住command点击::会跳转到具体的实现类——Consumer
+  list.forEach(System.out::println);		// 按住command点击::会跳转到具体的实现类——Consumer
+  
   // 通过构造方法引用创建函数式接口的实例
   list.forEach(FunctionInterface::new);
   ````
@@ -132,6 +135,7 @@ class WorkerInterfaceTest {
 
     public static void main(String [] args) {
         WorkerInterfaceTest test = new WorkerInterfaceTest();
+	
         //JDK7: invoke doSomeWork using Annonymous class
         test.execute(new WorkerInterface() {
             @Override
@@ -144,9 +148,14 @@ class WorkerInterfaceTest {
         test.execute(() -> System.out.println("Worker invoked using Lambda expression"));
 
         WorkerInterface i = () -> System.out.println("hello");
-        System.out.println(i.getClass()); // class com.jianlongz.java8.WorkerInterfaceTest$$Lambda$2/1174361318
-        System.out.println(i.getClass().getSuperclass()); // class java.lang.Object
-        System.out.println(i.getClass().getInterfaces()[0]);// interface com.jianlongz.java8.WorkerInterface
+        System.out.println(i.getClass()); 
+	// class com.jianlongz.java8.WorkerInterfaceTest$$Lambda$2/1174361318
+	
+        System.out.println(i.getClass().getSuperclass()); 
+	// class java.lang.Object
+	
+        System.out.println(i.getClass().getInterfaces()[0]);
+	// interface com.jianlongz.java8.WorkerInterface
     }
 }
 ````
@@ -207,23 +216,24 @@ public interface Function<T, R> {
 Function<String, String> function = str -> str.toUpperCase();
 Function<String, String> function = String::toUpperCase;
 
-// function传递的是行为，这个行为需要一个参数(value),会返回一个int类型的结果
-public int compute(int value, Function<Integer, Integer> function) {
+// function传递的是行为，这个行为需要一个Integer类型的参数(value)，会返回一个String类型的结果
+public String compute(int value, Function<Integer, String> function) {
     return function.apply(value);
 }
 
 public static void main(String[] args) {
     // 匿名内部类
-    System.out.println(functionTest.compute(1, new Function<Integer, Integer>() {
+    System.out.println(functionTest.compute(1, new Function<Integer, String>() {
         @Override
-        public Integer apply(Integer integer) {
-            return integer * 2;
+        public String apply(Integer integer) {
+            return "index is: " + integer * 2;
         }
     }));
     // statement：value -> {return value * 2;}
-    System.out.println(functionTest.compute(2, value -> {return value * 2;}));
+    System.out.println(functionTest.compute(2, value -> {return "index is: " + value * 2;}));
+    
     // expression：value -> value * 2
-    System.out.println(functionTest.compute(3, value -> value * 2));
+    System.out.println(functionTest.compute(3, value -> "index is: " + value * 2));
 }
 ````
 
@@ -323,7 +333,9 @@ public class C implements B, A {
   public int studentSortByScore(Student s) {  // 推荐！
   	return this.getScore() - s.getScore();
   }
-  list.sort(Student::studentSortByScore); // 类不能直接调用实例方法！因此这里的sort中的lambda表达式的第一个参数调用了StudentSortByScore方法，第二个参数是作为studentSortByScore的入参！！！
+  list.sort(Student::studentSortByScore); 
+  // 类不能直接调用实例方法，
+  // 因此这里的sort中的lambda表达式的第一个参数调用了StudentSortByScore方法，第二个参数是作为studentSortByScore的入参！！！
   ```
 
 * 构造方法引用, 类名::new
