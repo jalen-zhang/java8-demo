@@ -92,15 +92,15 @@ class WorkerInterfaceTest {
 
   `R apply(T t);` 根据给定的参数T，应用指定函数，返回结果为R
 
-* Predicate<\T>, BiPredicate<T, U>
+* Predicate*&lt;*T>, BiPredicate<T, U>
 
   `boolean test(T t);` 根据给定参数T，评估此谓词，返回结果为boolean
 
-* Supplier<\T>
+* Supplier*&lt;*T>
 
   `T get();` 不需要给定参数，应用指定函数，返回结果为T
 
-#### Consumer\<T>
+#### Consumer*&lt;*T>
 
 针对指定的元素执行指定的动作。只接收一个T类型的参数，并且没有返回值，有副作用(side-effects)
 
@@ -295,7 +295,7 @@ functionTest.compute4(1, 2, (v1, v2) -> v1 + v2, (v) -> v * v); // 9
 
 <br>
 
-#### Predicate<T>
+#### Predicate*&lt;*T>
 
 ```java
 // filter 方法的入参就是Predicate，方法体定义如下：
