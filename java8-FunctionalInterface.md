@@ -86,19 +86,19 @@ class WorkerInterfaceTest {
 
 * Consumer\<T>, BiConsumer<T, U>
 
-  根据给定的参数T，应用指定函数，返回结果为void
+  `void accept(T t);` 根据给定的参数T，应用指定函数，返回结果为void
 
 * Function<T, R>, BiFunction<T, U, R>
 
-  根据给定的参数T，应用指定函数，返回结果为R
+  `R apply(T t);` 根据给定的参数T，应用指定函数，返回结果为R
 
-* Predicate<T>, BiPredicate<T, U>
+* Predicate<\T>, BiPredicate<T, U>
 
-  根据给定参数T，评估此谓词，返回结果为boolean
+  `boolean test(T t);` 根据给定参数T，评估此谓词，返回结果为boolean
 
-* Supplier<T>
+* Supplier<\T>
 
-  不需要给定参数，应用指定函数，返回结果为T
+  `T get();` 不需要给定参数，应用指定函数，返回结果为T
 
 #### Consumer\<T>
 
