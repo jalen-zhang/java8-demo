@@ -126,7 +126,7 @@ Map<Type, Dish> group5 = menu.stream().collect(Collectors.groupingBy(
 ````
 
 *嵌套收集器分组效果流程如下图：*
-![嵌套收集器分组效果流程](md_imgs/group_muti.png)
+![嵌套收集器分组效果流程](resources/group_muti.png)
 
 **3. 元素分区**
 
