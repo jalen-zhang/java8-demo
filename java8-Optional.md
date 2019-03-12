@@ -27,7 +27,7 @@ Optional<Car> optCar = Optional.ofNullable(car);  // 可接受null的Optional。
 
   如果该值存在，将该值用Optional包装后返回，如果该值不存在，跑出NPE
 
-* ifPresent()
+* ifPresent(Consumer<? super T> consumer)
 
   如果值存在，就执行使用该值的方法调用，否则什么都不做
 
@@ -49,11 +49,33 @@ name.ifPresent(n -> System.out.println(n)); // 不要使用 if(name.isPresent())
 
 * map()
 
-  如果值存在，就对该值执行提供的mapping调用
+  如果值存在，就对该值执行提供的mapping调用。通过源码可以发现，map的返回值肯定为Optional对象，具体的被包装类型也可能为Optional，所以结果可能为`Optional<Optional<Car>>`
+
+```java
+public<U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+    Objects.requireNonNull(mapper);
+    if (!isPresent())
+        return empty();
+    else {
+        return Optional.ofNullable(mapper.apply(value));
+    }
+}
+```
 
 * 使用flatMap链接Optional对象
 
-  如果值存在，就对该值执行提供的mapping函数调用，返回一个Optional对象；否则返回一个空的Optional对象。map() 返回类型为`Optional<Optional<Car>>`，为嵌套Optional
+  如果值存在，就对该值执行提供的mapping函数调用，返回一个Optional对象；否则返回一个空的Optional对象。flatMap()的返回值为输入参数mapper指定的返回值，因此flatMap的返回值肯定为Optional，不可能出现`Optional<Optional<Car>>`。
+
+```java
+public<U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {// mapper指定的返回值！
+    Objects.requireNonNull(mapper);
+    if (!isPresent())
+        return empty();
+    else {
+        return Objects.requireNonNull(mapper.apply(value));// 没有将mapper的返回值包装为Optional
+    }
+}
+```
 
 ````java
 private String getCarInsuranceName(Person person) {
@@ -108,5 +130,19 @@ User b = Optional.ofNullable(nullUser)
     })
     .orElseGet(User::new);
 System.out.println(b); // User(name=null, age=0, weight=0.0)
+```
+
+#### Tips
+
+由于Optional没有实现Serializable接口，如果应用程序中用到了某些支持序列化的库或者框架，在域模型中使用Optional，可能发生Optional修饰的属性无法序列化的问题，导致应用程序出错。在域模型中推荐使用方式如下：
+
+```java
+public class Person{
+    private Car car;
+	// get、set
+    public Optional<Car> getCarAsOptional() {
+        return Optional.ofNullable(this.car);
+    }
+}
 ```
 
