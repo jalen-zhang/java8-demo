@@ -14,15 +14,12 @@ Joda-Time：第三方库，java8参考了较多
 
   - 有3个主要属性：year, month, day
   - represents a date，只提供了简单的日期，不含时间信息，不含时区信息。如2007-12-03；
-
   - 除了各种方法构建LocalDate之外，还提供了很多针对year-month-day的"加减运算"，如：`plus(), plusYears(), plusMonths(), plusDays(),minus****()`
-
   - Combines this date with a time to create a LocalDateTime: `LocalDateTime atTime()`
-
   - `formart()`: Formats this date using the specified formatter.
-
   - Compares this date to another date：`compareTo(), isAfer(), isBefore(), isEqual()`
   - `with()`：以当前对象为模板，对某些状态进行修改，并创建该对象的副本
+
   - `TemporalAdjuster`：类中提供了许多针对日期的复杂操作的工厂方法，比如firstDayOfYear()将返回一个新的日期，它的值为当年的第一天。也可以创建自己的TemporalAdjuster
 
 - `LocalTime`
@@ -31,6 +28,20 @@ Joda-Time：第三方库，java8参考了较多
   - 表示时间，如19:15:30 or 13:45.30.123456789
   - 这里面定义了很多常量，比如：`MILLIS_PER_DAY`
   - 主要方法：`now(), of(), of***(), parse(), plus(), minus(), format(), compare(),  `
+
+  ```java
+  // with()：以当前对象为模板，对某些状态进行修改，并创建该对象的副本
+  LocalTime time = LocalTime.now();
+  System.out.println(time);																			// 11:20:19.460
+  System.out.println(time.withHour(14));												// 14:20:19.460
+  System.out.println(time.with(ChronoField.HOUR_OF_DAY, 14));		// 14:20:19.460
+  System.out.println(time);																			// 11:20:19.460
+  
+  System.out.println(time.plusHours(5));
+  System.out.println(time.plus(5, ChronoUnit.HOURS));
+  System.out.println(time.minusHours(5));
+  System.out.println(time.minus(5, ChronoUnit.HOURS));
+  ```
 
 - `LocalDateTime`
 
@@ -42,14 +53,61 @@ Joda-Time：第三方库，java8参考了较多
 
   - 主要方法：`now(), of(date, time), ofInstant(), parse(), get***(), with***(), plus(), minus(), formar(), compare(),  `
 
+  ```java
+  LocalDateTime now = LocalDateTime.now();
+  System.out.println(now); // 2019-03-17T13:46:03.658
+  
+  LocalDateTime ldt = LocalDateTime.parse("2019-03-17T13:46:03.658");
+  System.out.println(ldt);
+  
+  System.out.println(ldt.toLocalDate());  // 2019-03-17
+  System.out.println(ldt.toLocalTime());  // 13:46:03.658
+  
+  System.out.println(ldt.getDayOfYear()); // 76
+  System.out.println(ldt.get(ChronoField.DAY_OF_YEAR));   // 76
+  System.out.println(ldt.getMonth());     // MARCH
+  System.out.println(ldt.getMonthValue());// 3
+  
+  System.out.println(ldt.with(ChronoField.MONTH_OF_YEAR, 8));// 2019-08-17T13:46:03.658
+  System.out.println(ldt.withMonth(8));   // 2019-08-17T13:46:03.658
+  
+  LocalDateTime.parse("2011-12-03T10:15:30", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+  System.out.println(ldt.plus(14, ChronoUnit.MINUTES));  // 2019-03-17T14:00:03.658
+  System.out.println(ldt.plusMinutes(14));// 2019-03-17T14:00:03.658
+  
+  DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+  System.out.println(ldt.format(formatter)); // 2019/03/17 13:46
+  System.out.println(LocalDateTime.parse("2019/03/17 13:46", formatter)); // 2019-03-17T13:46
+  
+  System.out.println(now.compareTo(ldt)); // 1
+  System.out.println(ldt.compareTo(now)); // -1
+  System.out.println(now.compareTo(now)); // 0
+  System.out.println(now.isAfter(ldt));   // true
+  System.out.println(now.isBefore(ldt));  // false
+  ```
+
 - `Instant`
 
-  - 面向机器的时间戳，从1970.1.1开始所经历的秒数进行计算，精度包含nano
-  - 可通过 Duration 和 Period 类来使用Instant
+  - [An instantaneous point on the time-line](<https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html>). (时间线上的瞬时点)，面向机器的时间戳，从1970.1.1开始所经历的秒数进行计算，在此之前的日期用复数表示，精度包含nano. This class is immutable and thread-safe.
+  - 有2个主要属性：seconds(long), nanos(int)
 
-- `Duration`主要用于以秒和纳秒衡量时间的长短
+  ```java
+  System.out.println(Instant.now());  // 2019-03-17T09:33:15.724Z  少了8个小时？
+  System.out.println(new Date(System.currentTimeMillis()));// Sun Mar 17 17:33:15 CST 2019
+  
+  System.out.println(Instant.now().toEpochMilli());   // 1552805942531
+  System.out.println(System.currentTimeMillis());     // 1552805942532
+  ```
 
-- `Period`以年月日的方式对多个时间单位建模
+- `Duration`
+
+  * A time-based amount of time, such as '34.5 seconds'. (基于时间的*时间量*，如34.5秒)
+  * 主要用于以秒和纳秒衡量时间的长短
+
+- `Period`
+
+  - A date-based amount of time in the ISO-8601 calendar system, such as '2 years, 3 months and 4 days'. (ISO-8601日历系统中基于日期的*时间量*，如“2年3个月4天”。)
+  - 以年月日的方式对多个时间单位建模
 
 为了更好地支持函数式编程，以上表示时间的对象，都是不可修改的，确保线程安全。如果需要修改对象，可以使用withAttribute()方法，该方法会创建对象的一个副本，并按要求修改指定的属性，如：`LocalDate.now().withYear(2018);` 返回的日期表示是2018年
 
@@ -57,23 +115,8 @@ Joda-Time：第三方库，java8参考了较多
   - *TODO: source code!*
   - 该类的实例是线程安全的！
 
-```java
-LocalDate date = LocalDate.of(2018, 9, 11);
-System.out.println(date.getYear());         // date.get(ChronoField.YEAR) => 2018
-System.out.println(date.getMonth());        // SEPTEMBER
-System.out.println(date.getMonthValue());   // date.get(ChronoField.MONTH_OF_YEAR) => 9
-System.out.println(date.getDayOfYear());    // 254
-System.out.println(date.getDayOfMonth());   // date.get(ChronoField.DAY_OF_MONTH) => 11
-System.out.println(date.getDayOfWeek());    // TUESDAY
 
-System.out.println(LocalDate.now());        		// 2018-09-25
-System.out.println(LocalDate.ofYearDay(2018, 255)); // 2018-09-12
 
-LocalDate now = LocalDate.parse("2018-09-25");
-LocalTime time = LocalTime.parse("19:54:38.840");
-LocalDateTime now1 = LocalDateTime.parse("2011-12-03T10:15:30", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-LocalDateTime now2 = LocalDateTime.parse("2011/12/03 19:15:30", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
 
-System.out.println(now2.toLocalDate()); // 2011-12-03
-System.out.println(now2.toLocalTime()); // 19:15:30
-```
+
+* immutable and unmodifiable!
