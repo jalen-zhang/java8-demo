@@ -1,114 +1,68 @@
-[TOC]
+#### Stream
 
-针对一个String类型的list，将其中每个元素转换为大写字母保存到list2，并输出
-
-````java
-List<String> list = Arrays.asList("hello", "world");
-// 使用lambda表达式
-List<String> list2 = new ArrayList<>();
-list.forEach(item -> list2.add(item.toUpperCase()));
-list2.forEach(item -> System.out.println(item));
-// 使用流的方式
-list.stream().map(item -> item.toUpperCase()).collect(Collectors.toList()).forEach(item -> System.out.println(item));
-// 简化一下，通过方法引用创建一个函数式接口实例
-list.stream().map(String::toUpperCase()).forEach(item -> System.out.println(item));
-````
-
- 
-
-### 流(Stream)
-
------
-
-**stream 并不是某种数据结构，它只是数据源的一种<font color="orange">视图</font>。这里的数据源可以是一个数组，Java容器或I/O channel等**
-#### <a name="fenced-code-block">流：从支持数据处理操作的源生成的元素序列</a>
+**stream 并不是某种数据结构，它只是数据源的一种<font color="orange">视图</font>。这里的数据源可以是一个数组，Java容器或I/O channel等**。<a name="fenced-code-block">流：从支持数据处理操作的源生成的元素序列</a>
 
 * 集合讲的是数据，流讲的是计算。流的目的在于表达计算
 * 从有序集合生成流时会保留原有的顺序。由列表生成的流，其元素顺序与列表一致
 * 流操作可以顺序执行，也可以并行执行
 * 在调用collect之前，没有任何结果产生，实际上根本就没有从menu里选择元素。链中的方法都在等待，直到调用collect
 
-#### <a name="fenced-code-block">流特点：</a>
+##### <a name="fenced-code-block">流特点：</a>
 
 1. 流只能被遍历一次，遍历完之后，流就被消费掉了。如需再次遍历，需要重新构造流，否则会抛异常
 2. 外部迭代(集合)与内部迭代(流)
 
-#### <a name="fenced-code-block">stream与collections有以下不同：</a>
+##### <a name="fenced-code-block">stream与collections有以下不同：</a>
+
 * **无存储**。stream不是一种数据结构，它只是某种数据源的一个视图
 * **为函数式编程而生**。对stream的任何修改都不会修改背后的数据源，比如对stream执行过滤操作并不会删除被过滤的元素，而是会产生一个不包含被过滤元素的新stream。
-* **惰式执行**。stream上的操作并不会立即执行，只有等到用户真正需要结果的时候才会执行。
+* **惰式执行**(Streams are lazy)。stream上的中间操作并不会立即执行，只有等到用户真正需要结果(执行终端操作)的时候才会执行。
 * **可消费性**。stream只能被“消费”一次，一旦遍历过就会失效，就像容器的迭代器那样，想要再次遍历必须重新生成。
 
-#### <a name="fenced-code-block">流操作：</a>
-1. 中间操作：总是会惰式执行，调用中间操作只会生成一个标记了该操作的新stream，仅此而已。如filter/map/limit/sort等。各种中间操作优化执行、短路、循环合并
-2. 终端操作：会触发实际计算，计算发生时会把所有中间操作积攒的操作以pipeline的方式执行，这样可以减少迭代次数。计算完成之后stream就会失效。终端操作会从流的流水线生成结果。执行流水线，并生成结果。如collect/forEach/count等
+##### <a name="fenced-code-block">流操作：</a>
 
-````java
-@Data
-@AllArgsConstructor
-class Dish{
-    private final String name;
-    private final boolean vegetarian;
-    private final int calories;
-    private final Type type;
+1. Stream source
+2. 零个或多个中间操作(intermediate operations)：总是会惰式执行，调用中间操作只会生成一个标记了该操作的新stream，仅此而已。如filter/map/limit/sort等。各种中间操作优化执行、短路、循环合并
+3. 一个终端操作(terminal operation)：会触发实际计算，计算发生时会把所有中间操作积攒的操作以pipeline的方式执行，这样可以减少迭代次数。计算完成之后stream就会失效。终端操作会从流的流水线生成结果。执行流水线，并生成结果。如collect/forEach/count等
 
-    @Override
-    public String toString() {
-        return name;
-    }
-}
+##### 构造流
 
-enum Type {
-    MEAT, FISH, OTHER;
-}
-````
+- 由值创建流。通过Stream接口的of静态方法创建一个流
 
-````java
-List<Dish> menu = Arrays.asList(
-        new Dish("pork", false, 800, Part2.Type.MEAT),
-        new Dish("beef", false, 700, Part2.Type.MEAT),
-        new Dish("chicken", false, 400, Part2.Type.MEAT),
-        new Dish("french fries", true, 530, Part2.Type.OTHER),
-        new Dish("rice", true, 350, Part2.Type.OTHER),
-        new Dish("season fruit", true, 120, Part2.Type.OTHER),
-        new Dish("pizza", true, 550, Part2.Type.OTHER),
-        new Dish("prawns", false, 300, Part2.Type.FISH),
-        new Dish("salmon", false, 450, Part2.Type.FISH)
-);
-    
-// 使用流来筛选菜单，找出三个高热量菜肴的名字
-menu.stream()   // 建立操作流水线
-        .filter(m -> m.getCalories() > 500) // 筛选出高热量的菜肴。从流中排除某些元素
-        .map(Dish::getName)                 // 获取菜名。将元素转换成其他形式或提取信息
-        .limit(3)                           // 只选择头3个。截断流，使其元素不超过给定数量
-        .collect(Collectors.toList())       // 将结果保存在另一个list中。将流转换为其他形式
-        .forEach(name -> log.info(name));   // 遍历打印结果
+```java
+Stream<String> stream = Stream.of("I", "love", "you", "too");
+Stream<String> stream = Stream.empty();
+```
 
+- 由数组/集合创建流。
 
-String names1 = menu.stream()
-        .filter(m -> m.getCalories() > 500)
-        .map(Dish::getName)
-        .limit(3)
-        .collect(Collectors.joining(", ")); // 将流中元素转换为逗号分隔的字符串
-log.info("names1: {}", names1);     // names1: pork, beef, french fries
+  通过Arrays类的stream方法，实际上第一种of方法底层也是调用的Arrays.stream(values);
 
+  通过集合的stream方法，该方法是Collection接口的默认方法，所有集合都继承了该方法。
 
-String names2 = menu.stream()
-        .sorted(Comparator.comparing(Dish::getCalories).reversed()) // 先按卡路里由高到低排序
-        .filter(m -> m.getCalories() > 500)
-        .map(Dish::getName)
-        .limit(3)
-        .collect(Collectors.joining(", "));
-log.info("names2: {}", names2);     // names2: pork, beef, pizza
+```java
+Arrays.stream("135,7,91".split(",")).map(d -> d.length()).count();
+Stream<String> stream3 = Arrays.asList("hello","world","helloworld").stream();
+```
 
+- 由文件生成流
 
-long count = menu.stream()
-        .filter(m -> m.getCalories() > 500)
-        .distinct()
-        .count();               // 返回流中元素的个数
-log.info("count: {}", count);   // count: 4    
+```java
+try (Stream<String> lines = Files.lines(Paths.get("~/test.txt"), Charset.defaultCharset())) {
+    long allWords = lines.flatMap(line -> Arrays.stream(line.split(" "))).distinct().count(); // 使用flatMap生成一个扁平的流，而不是使用map为各行生成一个流！
+} catch (IOException e) {...}
+```
 
-````
+- 由函数生成流
+
+```java
+Stream.generate(Math::random).limit(10).forEach(System.out::println);
+Stream.iterate(0, n -> n+2).limit(10).forEach(System.out::println);
+```
+
+```java
+Stream.iterate(new int[]{0, 1}, t -> new int[]{t[1], t[1]+t[0]}).limit(10).map(t -> t[0]).forEach(System.out::println); // 打印斐波拉契数列
+```
 
 #### <a name="fenced-code-block">使用流：</a>
 
@@ -119,7 +73,8 @@ log.info("count: {}", count);   // count: 4
 * 截断流 limit(n)
 
 ````java
-List<Dish> dishes = menu.stream().filter(d -> d.getCalories() > 400).limit(3).collect(Collectors.toList());
+List<Dish> dishes = menu.stream()
+  .filter(d -> d.getCalories() > 400).limit(3).collect(Collectors.toList());
 ````
 * 跳过元素 skip(n)
 * 输出流被消费后的结果，适合DEBUG peek()
@@ -140,8 +95,9 @@ Optional<Integer> r1 = Arrays.asList(1,2,3,4,5).stream()
 * 流的扁平化 flatMap  返回值：stream
 	* flatMap 方法吧一个流中的每个值都换成另一个流，然后把所有的流连接起来成为一个流
 	
-![](md_imgs/flatmap_desp.png)
-![](md_imgs/flatmap_flow.png)
+
+![](resources/flatmap_desp.png)
+![](resources/flatmap_flow.png)
 
 ````java
 Stream<String> stream1 = Stream.of("hello", "world");
@@ -181,7 +137,7 @@ menu.stream().filter(Dish::isVegetarian).findAny().ifPresent(d -> log.info(d.get
 Optional<Integer> r = Arrays.asList(1,2,3,4,5).stream().map(x -> x * x).filter(x -> x % 3 == 0).findFirst();
 ````
 
-#### 规约 (reduce：将流规约成一个值)
+##### 规约 (reduce：将流规约成一个值)
 
 * 元素求和
 
@@ -228,12 +184,81 @@ long count = menu.stream().count();
 
 * 流操作汇总
 
-![中间操作和终端操作](md_imgs/stream_operate.png)
+![中间操作和终端操作](resources/stream_operate.png)
 
 注：
 
 1. _以上这些方法都利用了短路，找到结果就立即停止计算；没有必要处理整个流。_
 2. _filter、map等操作是无状态的，它们并不存储任何状态；reduce、sorted、distinct等操作需要存储状态，并返回一个新的流。这中操作称为有状态操作_
+
+##### collect()
+
+本身支持并行处理。
+
+```java
+<R> R collect(Supplier<R> supplier,
+              BiConsumer<R, ? super T> accumulator,
+              BiConsumer<R, R> combiner);
+
+Stream<String> stream = Stream.of("a", "b", "c");
+List<String> list1 = stream.collect(
+  () -> Lists.newArrayList(),
+  (listResult, item) -> listResult.add(item),
+  (listResult, listResult2) -> listResult.addAll(listResult2));
+List<String> list2 = stream.collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+List<String> list3 = stream.collect(Collectors.toList());
+```
+
+
+
+```java
+List<Dish> menu = Arrays.asList(
+        new Dish("pork", false, 800, Part2.Type.MEAT),
+        new Dish("beef", false, 700, Part2.Type.MEAT),
+        new Dish("chicken", false, 400, Part2.Type.MEAT),
+        new Dish("french fries", true, 530, Part2.Type.OTHER),
+        new Dish("rice", true, 350, Part2.Type.OTHER),
+        new Dish("season fruit", true, 120, Part2.Type.OTHER),
+        new Dish("pizza", true, 550, Part2.Type.OTHER),
+        new Dish("prawns", false, 300, Part2.Type.FISH),
+        new Dish("salmon", false, 450, Part2.Type.FISH)
+);
+    
+// 使用流来筛选菜单，找出三个高热量菜肴的名字
+menu.stream()   // 建立操作流水线
+        .filter(m -> m.getCalories() > 500) // 筛选出高热量的菜肴。从流中排除某些元素
+        .map(Dish::getName)                 // 获取菜名。将元素转换成其他形式或提取信息
+        .limit(3)                           // 只选择头3个。截断流，使其元素不超过给定数量
+        .collect(Collectors.toList())       // 将结果保存在另一个list中。将流转换为其他形式
+        .forEach(name -> log.info(name));   // 遍历打印结果
+
+
+String names1 = menu.stream()
+        .filter(m -> m.getCalories() > 500)
+        .map(Dish::getName)
+        .limit(3)
+        .collect(Collectors.joining(", ")); // 将流中元素转换为逗号分隔的字符串
+log.info("names1: {}", names1);     // names1: pork, beef, french fries
+
+
+String names2 = menu.stream()
+        .sorted(Comparator.comparing(Dish::getCalories).reversed()) // 先按卡路里由高到低排序
+        .filter(m -> m.getCalories() > 500)
+        .map(Dish::getName)
+        .limit(3)
+        .collect(Collectors.joining(", "));
+log.info("names2: {}", names2);     // names2: pork, beef, pizza
+
+
+long count = menu.stream()
+        .filter(m -> m.getCalories() > 500)
+        .distinct()
+        .count();               // 返回流中元素的个数
+log.info("count: {}", count);   // count: 4    
+
+```
+
+#### 
 
 #### <a name="fenced-code-block">数值流</a>
 
@@ -290,43 +315,7 @@ long sum = IntStream.range(1, 100).filter(d -> d % 2 == 0).count(); 	  // 49
 long sum = IntStream.rangeClosed(1, 100).filter(d -> d % 2 == 0).count(); // 50
 ````
 
-#### <a name="fenced-code-block">构建流：</a>
-
-* 由值创建流
-
-````java
-Stream<String> stream = Stream.of("I", "love", "you", "too");
-Stream<String> stream = Stream.empty();
-````
-
-* 由数组创建流
-
-````java
-Arrays.stream("135,7,91".split(",")).map(d -> d.length()).count();
-````
-* 由文件生成流
-
-````java
-try (Stream<String> lines = Files.lines(Paths.get("~/test.txt"), Charset.defaultCharset())) {
-    long allWords = lines.flatMap(line -> Arrays.stream(line.split(" "))).distinct().count();
-} catch (IOException e) {...}
-````
-
-<font color="red">使用flatMap生成一个扁平的流，而不是使用map为各行生成一个流！</font>
-
-* 由函数生成流
-
-````java
-Stream.generate(Math::random).limit(10).forEach(System.out::println);
-Stream.iterate(0, n -> n+2).limit(10).forEach(System.out::println);
-````
-
-````java
-// 打印斐波拉契数列
-Stream.iterate(new int[]{0, 1}, t -> new int[]{t[1], t[1]+t[0]}).limit(10).map(t -> t[0]).forEach(System.out::println);
-````
-
-<br><br>
+<br>
 **举个简单栗子**
 
 ````java
