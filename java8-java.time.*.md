@@ -1,10 +1,10 @@
 ### java.time.*
 
-java.util.Date：只能以毫秒的精度表示时间，且年从1900开始，月从0开始；时区支持不够
+java.util.Date：只能以毫秒的精度表示时间，且年从1900开始，月从0开始；时区支持不够，可变对象
 
-java.util.Calendar：月从0开始
+java.util.Calendar：月从0开始，可变对象
 
-DateFormat：不是线程安全的
+DateFormat：不是线程安全的，可变对象
 
 Joda-Time：第三方库，java8参考了较多
 
@@ -88,7 +88,7 @@ Joda-Time：第三方库，java8参考了较多
 
 - `Instant`
 
-  - [An instantaneous point on the time-line](<https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html>). (时间线上的瞬时点)，面向机器的时间戳，从1970.1.1开始所经历的秒数进行计算，在此之前的日期用复数表示，精度包含nano. This class is immutable and thread-safe.
+  - [An instantaneous point on the time-line](<https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html>). (时间线上的瞬时点)，面向机器的时间戳，从1970.1.1开始所经历的秒数进行计算，在此之前的日期用负数表示，精度包含nano. This class is immutable and thread-safe.
   - 有2个主要属性：seconds(long), nanos(int)
 
   ```java
@@ -115,8 +115,15 @@ Joda-Time：第三方库，java8参考了较多
   - *TODO: source code!*
   - 该类的实例是线程安全的！
 
+* `ZoneId`
 
+  java8中的`java.time.ZoneId`是老版的`java.util.TimeZone`的替代，该类的设计目标就是简化java中时区的处理。时区是按照一定的规则将区域划分成的标准时间相同的区间。在`ZoneRules`类中包含40个这样的实例。可以通过ZoneId的getRules()得到指定时区的规则。每个特定的ZoneId都有由一个特定的地区ID标识。比如：`ZoneId romeZone = ZoneId.of("Europe/Rome")`
 
+  其中，地区ID都为"{区域}/{城市}"的格式，可以通过ZoneId提供的toZoneId()将一个老的时区对象转换为ZoneId：`ZoneId zoneId = TimeZone.getDefault().toZoneId()`
 
+  得到ZoneId之后，就可以将ZoneId和LocalDate/LocalDateTime/Instant对象整合起来，构造为一个`ZonedDateTime`实例，它代表了相对于指定时区的时间点。
+
+  ![理解ZoneDateTime](resources/ZoneDateTime.png)
 
 * immutable and unmodifiable!
+
