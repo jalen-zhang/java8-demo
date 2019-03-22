@@ -17,6 +17,15 @@
 * **无存储**。stream不是一种数据结构，它只是某种数据源的一个视图
 * **为函数式编程而生**。对stream的任何修改都不会修改背后的数据源，比如对stream执行过滤操作并不会删除被过滤的元素，而是会产生一个不包含被过滤元素的新stream。
 * **惰式执行**(Streams are lazy)。stream上的中间操作并不会立即执行，只有等到用户真正需要结果(执行终端操作)的时候才会执行。
+
+```java
+// 由于没有终端操作，以下方法没有任何输出！
+Stream.of("hello", "world", "helloworld").map(s -> {
+    System.out.println("====");
+    return s.toUpperCase();
+});
+```
+
 * **可消费性**。stream只能被“消费”一次，一旦遍历过就会失效，就像容器的迭代器那样，想要再次遍历必须重新生成。
 
 ##### <a name="fenced-code-block">流操作：</a>
@@ -207,6 +216,7 @@ List<String> list1 = stream.collect(
   (listResult, listResult2) -> listResult.addAll(listResult2));
 List<String> list2 = stream.collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 List<String> list3 = stream.collect(Collectors.toList());
+List<String> list4 = stream.collect(Collectors.toCollection(ArrayList::new));
 ```
 
 
