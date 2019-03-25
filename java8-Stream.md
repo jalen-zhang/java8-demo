@@ -102,13 +102,26 @@ Optional<Integer> r1 = Arrays.asList(1,2,3,4,5).stream()
 * 对流中每一个元素应用函数 map 返回值：stream
 	* 函数的返回值类型就是流的类型
 * 流的扁平化 flatMap  返回值：stream
-	* flatMap 方法吧一个流中的每个值都换成另一个流，然后把所有的流连接起来成为一个流
+	* flatMap 方法把一个流中的每个值都换成另一个流，然后把所有的流连接起来成为一个流。注意：flatMap()方法的入参是一个Stream<T>包装类型的。
 	
 
 ![](resources/flatmap_desp.png)
 ![](resources/flatmap_flow.png)
 
 ````java
+Lists.newArrayList("hello world", "welcome world")
+        .stream()
+        .map(item -> item.split(" "))  // Stream<String[]>
+        .flatMap(Arrays::stream)       // Stream<String>
+        .distinct()
+        .forEach(System.out::println);
+
+List<String> h1 = Lists.newArrayList("hi", "hello", "你好");
+List<String> h2 = Lists.newArrayList("zhangsan", "lisi", "wangwu", "zhaoliu");
+h1.stream()
+  			.flatMap(item1 -> h2.stream().map(item2 -> item1 + ", " + item2))
+  			.forEach(System.out::println);
+
 Stream<String> stream1 = Stream.of("hello", "world");
 stream1.map(w -> w.split(""))
         .flatMap(Arrays::stream)

@@ -1,6 +1,25 @@
 ## 规约(reduction operation)
 
-* `collect()`
+* `collect()`  收集器
+
+* `Collector`
+
+  Collector 作为collect方法的参数。是一个接口，它是一个**可变(mutable)**的汇聚操作，将输入元素累积到一个可变的结果容器(mutable result container)中；它会在所有元素都处理完毕之后，将累积的结果转换为一个最终的表示(这是一个可选操作)；它支持串行与并行两种方式。
+
+  ```java
+  A Collector is specified by four functions that work together to accumulate entries into a mutable result container, and optionally perform a final transform on the result.  They are: 
+     <1>creation of a new result container ({@link #supplier()})
+     <2>incorporating(合并) a new data element(流中的元素) into a result container ({@link #accumulator累加器()})
+     <3>combining two result containers into one ({@link #combiner()})
+     <4>performing an optional final transform on the container ({@link #finisher()})
+  ```
+
+  
+
+* `Collectors` 
+
+  `public final class Collectors`，是一个final修饰的工厂类，实现了Collector接口中的一系列有用的mutable reduce operation。
+
 * `reduce()`
 * `sum()`、`max()`、`count()`...
 
@@ -124,6 +143,18 @@ Map<Type, Dish> group5 = menu.stream().collect(Collectors.groupingBy(
 // {FISH=salmon, OTHER=pizza, MEAT=pork}
 
 ````
+
+```java
+// select name, count(*) from User group by name;
+Map<String, Long> count = users.stream().collect(Collectors.groupingBy(User::getName, Collectors.counting()));
+System.out.println(count);
+
+Map<String, Double> average = users.stream().collect(Collectors.groupingBy(User::getName, Collectors.averagingLong(User::getAge)));
+System.out.println(average);
+
+Map<Boolean, List<User>> partition = users.stream().collect(Collectors.partitioningBy(user -> user.getAge() > 20));
+System.out.println(partition);
+```
 
 *嵌套收集器分组效果流程如下图：*
 ![嵌套收集器分组效果流程](resources/group_muti.png)

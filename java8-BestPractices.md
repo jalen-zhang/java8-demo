@@ -50,3 +50,11 @@ high-order function，满足以下任一条件即可：
 
 #### 科里化
 
+#### 静态导入
+
+```java
+import static java.util.stream.Collectors.*;
+
+users.stream().collect(groupingBy(User::getName, counting()));
+```
+
