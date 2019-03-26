@@ -1,10 +1,12 @@
 ## 规约(reduction operation)
 
-* `collect()`  收集器
+* `collect()`  
+
+  收集器，是一个方法
 
 * `Collector`
 
-  Collector 作为collect方法的参数。是一个接口，它是一个**可变(mutable)**的汇聚操作，将输入元素累积到一个可变的结果容器(mutable result container)中；它会在所有元素都处理完毕之后，将累积的结果转换为一个最终的表示(这是一个可选操作)；它支持串行与并行两种方式。
+  - Collector 作为collect方法的参数。是一个接口，它是一个**可变(mutable)**的汇聚操作，将输入元素累积到一个可变的结果容器(mutable result container)中；它会在所有元素都处理完毕之后，将累积的结果转换为一个最终的表示(这是一个可选操作)；它支持串行与并行两种方式。
 
   ```java
   A Collector is specified by four functions that work together to accumulate entries into a mutable result container, and optionally perform a final transform on the result.  They are: 
@@ -12,15 +14,31 @@
      <2>incorporating(合并) a new data element(流中的元素) into a result container ({@link #accumulator累加器()})
      <3>combining two result containers into one ({@link #combiner()})
      <4>performing an optional final transform on the container ({@link #finisher()})
+       
+   * A sequential implementation of a reduction using a collector would
+   * create a single result container using the supplier function, and invoke the
+   * accumulator function once for each input element.  A parallel implementation
+   * would partition the input, create a result container for each partition,
+   * accumulate the contents of each partition into a subresult for that partition,
+   * and then use the combiner function to merge the subresults into a combined
+   * result.
+   *     A a2 = supplier.get();
+   *     accumulator.accept(a2, t1);
+   *     A a3 = supplier.get();
+   *     accumulator.accept(a3, t2);
+   *     R r2 = finisher.apply(combiner.apply(a2, a3));
   ```
 
-  
+  - 为了保证并行操作和串行操作结果的等价性，Collector函数需要满足两个条件：identity(同一性)和associativity(结合性)。
+    - identity: a == combiner.apply(a, supplier.get())
+    - associativity
 
 * `Collectors` 
 
   `public final class Collectors`，是一个final修饰的工厂类，实现了Collector接口中的一系列有用的mutable reduce operation。
 
 * `reduce()`
+
 * `sum()`、`max()`、`count()`...
 
 参考：[流的规约操作汇总介绍](https://github.com/CarpenterLee/JavaLambdaInternals/blob/master/5-Streams%20API(II).md)
