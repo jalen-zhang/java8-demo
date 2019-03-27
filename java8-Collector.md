@@ -27,6 +27,17 @@
    *     A a3 = supplier.get();
    *     accumulator.accept(a3, t2);
    *     R r2 = finisher.apply(combiner.apply(a2, a3));
+  // 构造方式
+  Collector<Widget, ?, TreeSet<Widget>> intoSet = Collector.of(
+  					TreeSet::new, 
+    				TreeSet::add,
+            (left, right) -> { left.addAll(right); return left; }
+  );
+  // Performing a reduction operation with a Collector should produce a result equivalent to:等价于
+   *     R container = collector.supplier().get();  // 获得一个R类型结果容器
+   *     for (T t : data) // 遍历流中每个T类型的参数
+   *         collector.accumulator().accept(container, t); // 将每个t累加到结果容器中
+   *     return collector.finisher().apply(container); // 返回最终结果
   ```
 
   - 为了保证并行操作和串行操作结果的等价性，Collector函数需要满足两个条件：identity(同一性)和associativity(结合性)。
