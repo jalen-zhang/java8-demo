@@ -58,3 +58,34 @@ import static java.util.stream.Collectors.*;
 users.stream().collect(groupingBy(User::getName, counting()));
 ```
 
+####  精简流的调用链
+
+```java
+collection.stream().forEach() → collection.forEach()
+collection.stream().collect(toList/toSet/toCollection()) → new CollectionType<>(collection)
+collection.stream().toArray() → collection.toArray()
+Arrays.asList().stream() → Arrays.stream() or Stream.of()
+IntStream.range(0, array.length).mapToObj(idx -> array[idx]) → Arrays.stream(array)
+IntStream.range(0, list.size()).mapToObj(idx -> list.get(idx)) → list.stream()
+Collections.singleton().stream() → Stream.of()
+Collections.emptyList().stream() → Stream.empty()
+stream.filter().findFirst().isPresent() → stream.anyMatch()
+stream.collect(counting()) → stream.count()
+stream.collect(maxBy()) → stream.max()
+stream.collect(mapping()) → stream.map().collect()
+stream.collect(reducing()) → stream.reduce()
+stream.collect(summingInt()) → stream.mapToInt().sum()
+stream.mapToObj(x -> x) → stream.boxed()
+stream.map(x -> {...; return x;}) → stream.peek(x -> ...)
+!stream.anyMatch() → stream.noneMatch()
+!stream.anyMatch(x -> !(...)) → stream.allMatch()
+stream.map().anyMatch(Boolean::booleanValue) -> stream.anyMatch()
+IntStream.range(expr1, expr2).mapToObj(x -> array[x]) -> Arrays.stream(array, expr1, expr2)
+Collection.nCopies(count, ...) -> Stream.generate().limit(count)
+stream.sorted(comparator).findFirst() -> Stream.min(comparator)
+  
+Note that the replacements semantic may have minor difference in some cases. For example, Collections.synchronizedList(...).stream().forEach() is not synchronized while Collections.synchronizedList(...).forEach() is synchronized. Or collect(Collectors.maxBy()) would return an empty Optional if the resulting element is null while Stream.max() will throw NullPointerException in this case.
+```
+
+
+
