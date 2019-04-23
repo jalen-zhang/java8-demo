@@ -89,3 +89,6 @@ Note that the replacements semantic may have minor difference in some cases. For
 
 
 
+Object<? super T>: 这里的泛型表示的是T类型或者T类型的父类。
+
+如果Student implements A, B, C { }, 那这里的泛型?可以是Student，也可是是A/B/C，或者Object
